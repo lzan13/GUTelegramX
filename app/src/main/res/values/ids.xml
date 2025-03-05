@@ -122,6 +122,14 @@
   <item type="id" name="edit_proxy_password" />
   <item type="id" name="edit_proxy_secret" />
 
+  <!--新增 id-->
+  <item type="id" name="btn_groupUltraSettings" />
+  <item type="id" name="btn_groupUltraAiTranslation" />
+  <item type="id" name="btn_groupUltraVoiceToText" />
+  <item type="id" name="btn_groupUltraScreenshotRestriction" />
+
+  <item type="id" name="controller_groupUltraSettings" />
+
   <item type="id" name="controller_msgTranslate" />
   <item type="id" name="controller_simplePager" />
   <item type="id" name="controller_logOut" />

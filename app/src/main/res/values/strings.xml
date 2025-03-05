@@ -983,6 +983,13 @@
   <string name="PasswordEnabled">Enabled</string>
   <string name="PasswordDisabled">Disabled</string>
   <string name="ThisDevice">This Device</string>
+
+  <string name="GroupUltraSettings">Group Ultra Settings</string>
+  <string name="GroupUltraAiTranslation">AI Translation</string>
+  <string name="GroupUltraVoiceToText">Voice to Text</string>
+  <string name="GroupUltraScreenshotRestriction">Screenshot Restriction</string>
+  <string name="GroupUltraScreenshotRestrictionDescription">Turning off the screenshot restriction will allow system and third-party apps to record and capture the app screen!</string>
+
   <string name="Devices">Devices</string>
   <string name="NoOtherSessions">No Other Active Sessions</string>
   <string name="NoOtherSessionsInfo">You can log in to Telegram from other mobile, tablet and desktop devices, using the same phone number. All your data will be instantly synchronized.</string>

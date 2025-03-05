@@ -2715,7 +2715,8 @@ public abstract class BaseActivity extends ComponentActivity implements View.OnT
   }
 
   private void setDisallowScreenshots (boolean disallow) {
-    setWindowFlags(disallow ? WindowManager.LayoutParams.FLAG_SECURE : 0, WindowManager.LayoutParams.FLAG_SECURE);
+    boolean isOpenGroupUltraScreenshotRestriction = tdlib.settings().isOpenGroupUltraScreenshotRestriction();
+    setWindowFlags(disallow && isOpenGroupUltraScreenshotRestriction ? WindowManager.LayoutParams.FLAG_SECURE : 0, WindowManager.LayoutParams.FLAG_SECURE);
   }
 
   public interface ActivityListener {

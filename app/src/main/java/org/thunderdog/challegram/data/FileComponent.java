@@ -29,6 +29,7 @@ import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BuildConfig;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.U;
+import org.thunderdog.challegram.component.chat.VoiceToTextView;
 import org.thunderdog.challegram.component.chat.Waveform;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.core.Lang;
@@ -89,6 +90,8 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
   private boolean needFakeTitle;
   private @Nullable String subtitle, subtitleMeasure;
   private @Nullable Waveform waveform;
+  // 语音转文字按钮
+  private @Nullable VoiceToTextView voiceToTextView;
 
   private @Nullable Text trimmedTitle, trimmedSubtitle;
   private float sizeWidth;
@@ -249,7 +252,9 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
     this.waveform = new Waveform(voice.waveform, Waveform.MODE_BITMAP, context.isOutgoingBubble());
     this.unreadFactor = playPauseFile != context.getMessage() || context.isContentRead() ? 0f : 1f;
 
-    this.progress = new FileProgressComponent(context.context(), context.tdlib(), TdlibFilesManager.DOWNLOAD_FLAG_VOICE, false,message != null ? message.chatId : context.getChatId(), message != null ? message.id : context.getId());
+    this.voiceToTextView = new VoiceToTextView();
+
+    this.progress = new FileProgressComponent(context.context(), context.tdlib(), TdlibFilesManager.DOWNLOAD_FLAG_VOICE, false, message != null ? message.chatId : context.getChatId(), message != null ? message.id : context.getId());
     this.progress.setBackgroundColorProvider(context);
     this.progress.setSimpleListener(this);
     this.progress.setBackgroundColorId(context.isOutgoingBubble() ? ColorId.bubbleOut_file : ColorId.file);
@@ -358,6 +363,7 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
     }
     if (waveform != null) {
       waveform.layout(Math.min(Screen.dp(420f), Math.min(TGMessage.getEstimatedContentMaxWidth(), maxWidth) - Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS) * 2 - getPreviewOffset() - (int) sizeWidth - Screen.dp(12f)));
+      voiceToTextView.layout();
     }
   }
 
@@ -714,6 +720,9 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
       }*/
     }
 
+    /**
+     * 绘制操作按钮
+     */
     progress.setRequestedAlpha(alpha);
     progress.setBounds(startX, startY, startX + previewSize, startY + previewSize);
     progress.draw(view, c);
@@ -754,8 +763,13 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
       int cy = startY + Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS);
       waveform.draw(c, seek, waveformLeft, cy, isPlaying && TD.isSelfDestructTypeImmediately(message));
       boolean align = context.isOutgoingBubble();
+      // 判断语音转文字开关
+      boolean isOpenGroupUltraVoiceToText = context.tdlib().settings().isOpenGroupUltraVoiceToText();
       if (unreadFactor != 0f) {
         int cx = startX + Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS);
+        if (trimmedSubtitle != null && isOpenGroupUltraVoiceToText) {
+          cx += trimmedSubtitle.getWidth() + Screen.dp(4f);
+        }
         int fileRadius = Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS);
         float innerRadius = Screen.dp(3f);
         float outerRadius = innerRadius + Screen.dp(2f);
@@ -767,10 +781,32 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
         c.drawCircle(x, y, innerRadius * unreadFactor, Paints.fillingPaint(ColorUtils.alphaColor(unreadFactor, Theme.getColor(align ? ColorId.bubbleOut_waveformActive : ColorId.waveformActive))));
       }
       if (trimmedSubtitle != null) {
-        int textX = startX + previewSize + getPreviewOffset() + waveform.getWidth() + Screen.dp(12f);
-        trimmedSubtitle.draw(c, textX, textX + trimmedSubtitle.getWidth(), 0, startY + Screen.dp(18f), null, alpha);
+        int textX, textY;
+        if (isOpenGroupUltraVoiceToText) {
+          // 将时间移到波形图下方
+          textX = startX + Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS) * 2 + Screen.dp(12f);
+          textY = startY + Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS) + Screen.dp(10f);
+
+        } else {
+          textX = startX + previewSize + getPreviewOffset() + waveform.getWidth() + Screen.dp(12f);
+          textY = startY + Screen.dp(18f);
+        }
+        trimmedSubtitle.draw(c, textX, textX + trimmedSubtitle.getWidth(), 0, textY, null, alpha);
+      }
+      if (isOpenGroupUltraVoiceToText && voiceToTextView != null) {
+        drawVoiceToText(c, startX, startY);
       }
     }
+  }
+
+  /**
+   * 绘制语音转文字控制按钮
+   */
+  private void drawVoiceToText (Canvas c, int startX, int startY) {
+    int iconX = startX + getPreviewSize() + getPreviewOffset() + waveform.getWidth() + Screen.dp(4f);
+    int iconY = startY + Screen.dp(4f);
+
+    voiceToTextView.draw(c, iconX, iconY);
   }
 
   private boolean setSubtitle (@Nullable String subtitle) {
@@ -825,7 +861,7 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
   }
 
   @Override
-  public void onPlayPause (int fileId, boolean isPlaying, boolean isUpdate) { }
+  public void onPlayPause (int fileId, boolean isPlaying, boolean isUpdate) {}
 
   @Override
   public boolean needPlayProgress (int fileId) {

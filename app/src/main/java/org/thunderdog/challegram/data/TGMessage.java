@@ -1798,6 +1798,41 @@ public abstract class TGMessage implements InvalidateContentProvider, TdlibDeleg
     }
   }
 
+  /**
+   * 绘制控制图标
+   */
+  protected void drawControlIcon(Canvas c, Paint paint, boolean stroke, int padding) {
+
+    if (paint.getAlpha() == 0) {
+      return;
+    }
+
+    boolean alignContentRight = alignBubbleRight();
+    // 只有文本类消息才需要显示翻译按钮
+    if(msg.content instanceof TdApi.MessageText && !alignContentRight){
+
+      float left = bubblePathRect.left - padding - Screen.dp(8f);
+      float top = bubblePathRect.top - padding;
+      float right = bubblePathRect.right + padding;
+      float bottom = bubblePathRect.bottom + padding;
+
+      if (alignContentRight) {
+        right = left - Screen.dp(36f);
+      } else {
+        left = bubblePathRect.right + Screen.dp(8f);
+        right = left + Screen.dp(36f);
+      }
+
+      float iconTop = bottom - Screen.dp(36f);
+
+      float cx = left + (right - left) / 2;
+      float cy = iconTop + (bottom - iconTop) / 2;
+      float radius = Screen.dp(18f);
+      Log.i("lzan13 TGMessage.drawControlIcon cx: %f, cy: %f, radius: %f", cx, cy, radius);
+      c.drawCircle(cx, cy, radius, paint);
+    }
+  }
+
   public static int getDateHeight (boolean useBubbles) {
     return (useBubbles ? xDatePadding - Screen.dp(3f) * 2 : xDatePadding);
   }
@@ -2022,6 +2057,9 @@ public abstract class TGMessage implements InvalidateContentProvider, TdlibDeleg
         }
       }
       drawBubble(c, Paints.fillingPaint(bubbleColor), false, 0);
+      if (tdlib.settings().isOpenGroupUltraAiTranslation()) {
+        drawControlIcon(c, Paints.fillingPaint(bubbleColor), false, 0);
+      }
     }
 
     // Content universal
@@ -3150,7 +3188,7 @@ public abstract class TGMessage implements InvalidateContentProvider, TdlibDeleg
       msg.importInfo.date :
     0;
   }
-  
+
   public final boolean forceForwardOrImportInfo () {
     if (msg.importInfo != null) {
       return true;
@@ -9651,7 +9689,7 @@ public abstract class TGMessage implements InvalidateContentProvider, TdlibDeleg
 
     return emojiSets.toArray();
   }
-  
+
   /* Reaction Avatars */
 
   // todo: update when supergroup updated

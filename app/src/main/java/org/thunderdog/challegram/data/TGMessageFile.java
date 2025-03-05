@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.drinkless.tdlib.TdApi;
+import org.thunderdog.challegram.Log;
 import org.thunderdog.challegram.component.chat.MessageView;
 import org.thunderdog.challegram.component.chat.MessagesManager;
 import org.thunderdog.challegram.config.Config;
@@ -565,6 +566,7 @@ public class TGMessageFile extends TGMessage {
 
   @Override
   protected void drawContent (MessageView view, Canvas c, final int startX, final int startY, int maxWidth, ComplexReceiver receiver) {
+    Log.i("TGMessageFile.drawContent");
     float alpha = getTranslationLoadingAlphaValue();
 
     final int backgroundColor = getContentBackgroundColor();
@@ -578,6 +580,7 @@ public class TGMessageFile extends TGMessage {
       restoreToCount = -1;
     }
     for (ListAnimator.Entry<CaptionedFile> entry : files) {
+      Log.i("TGMessageFile.drawContent %s", entry.item.toString());
       ImageReceiver imageReceiver = receiver.getImageReceiver(entry.item.receiverId);
       DoubleImageReceiver previewReceiver = receiver.getPreviewReceiver(entry.item.receiverId);
       RectF rectF = entry.getRectF();

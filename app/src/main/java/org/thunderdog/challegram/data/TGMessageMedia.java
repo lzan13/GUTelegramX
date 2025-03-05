@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.drinkless.tdlib.TdApi;
+import org.thunderdog.challegram.Log;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.U;
 import org.thunderdog.challegram.component.chat.MessageView;
@@ -580,6 +581,7 @@ public class TGMessageMedia extends TGMessage {
 
   @Override
   protected void drawContent (MessageView view, Canvas c, int startX, int startY, int maxWidth, ComplexReceiver complexReceiver) {
+    Log.i("TGMessageMedia.drawContent");
     final boolean clipped = useBubbles() && !useForward();
     final int saveCount = clipped ? ViewSupport.clipPath(c, getBubbleClipPath()) : Integer.MIN_VALUE;
     mosaicWrapper.draw(view, c, startX, startY, complexReceiver, useFullWidth());

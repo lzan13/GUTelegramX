@@ -611,6 +611,10 @@ public class SettingsController extends ViewController<Void> implements
       items.add(new ListItem(ListItem.TYPE_SHADOW_BOTTOM));
     }
 
+    // 新增自定义设置入口
+    items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
+    items.add(new ListItem(ListItem.TYPE_SETTING, R.id.btn_groupUltraSettings, R.drawable.baseline_devices_other_24, R.string.GroupUltraSettings));
+
     items.add(new ListItem(ListItem.TYPE_SHADOW_TOP));
     items.add(new ListItem(ListItem.TYPE_VALUED_SETTING_COMPACT, R.id.btn_devices, R.drawable.baseline_devices_other_24, R.string.Devices));
     items.add(new ListItem(ListItem.TYPE_SEPARATOR));
@@ -1135,6 +1139,8 @@ public class SettingsController extends ViewController<Void> implements
       navigateTo(new SettingsLanguageController(context, tdlib));
     } else if (viewId == R.id.btn_notificationSettings) {
       navigateTo(new SettingsNotificationController(context, tdlib));
+    } else if (viewId == R.id.btn_groupUltraSettings) {
+      navigateTo(new SettingsGroupUltraController(context, tdlib));
     } else if (viewId == R.id.btn_devices) {
       navigateTo(new SettingsSessionsController(context, tdlib));
     } else if (viewId == R.id.btn_checkUpdates) {

@@ -62,6 +62,12 @@ public class TdlibSettingsManager implements CleanupStartupDelegate {
   private static final String THEME_GLOBAL_THEME_KEY = "settings_global_theme";
   private static final String THEME_GLOBAL_THEME_DAYLIGHT_KEY = "settings_global_theme_daylight";
   private static final String THEME_GLOBAL_THEME_NIGHT_KEY = "settings_global_theme_night";
+  /**
+   * 自定义设置 key
+   */
+  private static final String GROUP_ULTRA_AI_TRANSLATION_KEY = "settings_group_ultra_ai_translation";
+  private static final String GROUP_ULTRA_VOICE_TO_TEXT_KEY = "settings_group_ultra_voice_to_text";
+  private static final String GROUP_ULTRA_SCREENSHOT_RESTRICTION_KEY = "settings_group_ultra_screenshot_restriction";
 
   @Deprecated
   @SuppressWarnings("DeprecatedIsStillUsed")
@@ -557,6 +563,33 @@ public class TdlibSettingsManager implements CleanupStartupDelegate {
 
   public boolean useBubbles () {
     return chatStyle() == ThemeManager.CHAT_STYLE_BUBBLES;
+  }
+
+  /**
+   * 使用极群相关设置
+   */
+  public boolean isOpenGroupUltraAiTranslation () {
+    return Settings.instance().getBoolean(GROUP_ULTRA_AI_TRANSLATION_KEY,true);
+  }
+
+  public void setGroupUltraAiTranslation (boolean value) {
+    Settings.instance().putBoolean(GROUP_ULTRA_AI_TRANSLATION_KEY, value);
+  }
+
+  public boolean isOpenGroupUltraVoiceToText () {
+    return Settings.instance().getBoolean(GROUP_ULTRA_VOICE_TO_TEXT_KEY,true);
+  }
+
+  public void setGroupUltraVoiceToText (boolean value) {
+    Settings.instance().putBoolean(GROUP_ULTRA_VOICE_TO_TEXT_KEY, value);
+  }
+
+  public boolean isOpenGroupUltraScreenshotRestriction () {
+    return Settings.instance().getBoolean(GROUP_ULTRA_SCREENSHOT_RESTRICTION_KEY,true);
+  }
+
+  public void setGroupUltraScreenshotRestriction (boolean value) {
+    Settings.instance().putBoolean(GROUP_ULTRA_SCREENSHOT_RESTRICTION_KEY, value);
   }
 
  /* public int peerToPeerOption () {
