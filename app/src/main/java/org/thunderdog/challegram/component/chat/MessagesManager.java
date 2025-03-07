@@ -1836,6 +1836,14 @@ public class MessagesManager implements Client.ResultHandler, MessagesSearchMana
     }
   }
 
+  public void updateMessageTranscribeContent (long chatId, long messageId, TdApi.MessageContent content) {
+    Log.i("MessageManager.updateMessageTranscribeContent content:%s", ((TdApi.MessageVoiceNote)content).caption.text);
+    updateMessageContent(chatId, messageId, content);
+  }
+
+  public void updateMessageTranslationContent(long chatId, long messageId, TdApi.MessageContent content){
+    updateMessageContent(chatId, messageId, content);
+  }
   public void updateMessageTranslation (long chatId, long messageId, TdApi.FormattedText translatedText) {
     tdlib.ui().post(() -> {
       if (loader.getChatId() == chatId) {

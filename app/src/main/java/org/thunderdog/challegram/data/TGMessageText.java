@@ -15,6 +15,7 @@
 package org.thunderdog.challegram.data;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,8 +24,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.drinkless.tdlib.TdApi;
+import org.thunderdog.challegram.Log;
 import org.thunderdog.challegram.component.chat.MessageView;
 import org.thunderdog.challegram.component.chat.MessagesManager;
+import org.thunderdog.challegram.component.chat.TranslationIcon;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.core.Lang;
 import org.thunderdog.challegram.loader.ComplexReceiver;
@@ -34,6 +37,8 @@ import org.thunderdog.challegram.loader.Receiver;
 import org.thunderdog.challegram.loader.gif.GifReceiver;
 import org.thunderdog.challegram.mediaview.MediaViewThumbLocation;
 import org.thunderdog.challegram.theme.ColorId;
+import org.thunderdog.challegram.theme.Theme;
+import org.thunderdog.challegram.tool.Paints;
 import org.thunderdog.challegram.tool.Screen;
 import org.thunderdog.challegram.tool.Strings;
 import org.thunderdog.challegram.tool.Views;
@@ -56,6 +61,7 @@ import tgx.td.Td;
 
 public class TGMessageText extends TGMessage {
   private TdApi.FormattedText text;
+  private TranslationIcon translationIcon;
   private final VariableFloat lastLineWidth = new VariableFloat(0f);
   private final ReplaceAnimator<TextWrapper> visibleText = new ReplaceAnimator<>(new ReplaceAnimator.Callback() {
     @Override
@@ -114,6 +120,8 @@ public class TGMessageText extends TGMessage {
       setText(text.text, false);
       setLinkPreview(text.linkPreview, text.linkPreviewOptions);
     }
+
+    translationIcon = new TranslationIcon(this, msg);
   }
 
   public TGMessageText (MessagesManager context, TdApi.SponsoredMessage sponsoredMessage, long inChatId) {
@@ -121,6 +129,8 @@ public class TGMessageText extends TGMessage {
     this.currentMessageText = (TdApi.MessageText) sponsoredMessage.content;
     setText(currentMessageText.text, false);
     // TODO button
+
+    translationIcon = new TranslationIcon(this, msg);
   }
 
   public TGMessageText (MessagesManager context, TdApi.Message msg, TdApi.FormattedText text) {
@@ -425,10 +435,10 @@ public class TGMessageText extends TGMessage {
     TdApi.MessageText oldMessageText = Td.isText(oldContent) ? (TdApi.MessageText) oldContent : null;
     TdApi.MessageText newMessageText = Td.isText(newContent) ? (TdApi.MessageText) newContent : null;
     if (!Td.equalsTo(Td.textOrCaption(oldContent), Td.textOrCaption(newContent)) ||
-        !Td.equalsTo(oldMessageText != null ? oldMessageText.linkPreview : null,
-                     newMessageText != null ? newMessageText.linkPreview : null) ||
-        !Td.equalsTo(oldMessageText != null ? oldMessageText.linkPreviewOptions : null,
-                     newMessageText != null ? newMessageText.linkPreviewOptions : null)
+      !Td.equalsTo(oldMessageText != null ? oldMessageText.linkPreview : null,
+        newMessageText != null ? newMessageText.linkPreview : null) ||
+      !Td.equalsTo(oldMessageText != null ? oldMessageText.linkPreviewOptions : null,
+        newMessageText != null ? newMessageText.linkPreviewOptions : null)
     ) {
       updateMessageContent(msg, newContent, isBottomMessage);
       return true;
@@ -553,11 +563,34 @@ public class TGMessageText extends TGMessage {
       int linkPreviewX = Lang.rtl() ? startX + maxWidth - linkPreview.getWidth() : startX;
       linkPreview.draw(view, c, linkPreviewX, linkPreviewY, preview, receiver, alpha, textMediaReceiver);
     }
+    // 绘制翻译按钮
+    final int bubbleColor = Theme.getColor(isOutgoingBubble() && !useCircleBubble() ? ColorId.bubbleOut_background : ColorId.bubbleIn_background);
+    if (tdlib.settings().isOpenGroupUltraAiTranslation()) {
+      drawControlIcon(c, Paints.fillingPaint(bubbleColor));
+    }
   }
 
   @Override
   protected void drawContent (MessageView view, Canvas c, int startX, int startY, int maxWidth) {
     drawContent(view, c, startX, startY, maxWidth, null, null);
+  }
+
+  /**
+   * 绘制控制图标
+   */
+  protected void drawControlIcon (Canvas c, Paint paint) {
+    if (paint.getAlpha() == 0) {
+      return;
+    }
+
+    boolean alignContentRight = alignBubbleRight();
+    // 只有接收到的文本类消息才需要显示翻译按钮
+    if (!alignContentRight) {
+      int startX = (int) (bubblePathRect.right + Screen.dp(8f));
+      int startY = (int) (bubblePathRect.bottom - Screen.dp(36f));
+      translationIcon.setBounds(startX, startY);
+      translationIcon.draw(c, paint, startX, startY);
+    }
   }
 
   @Override
@@ -644,7 +677,7 @@ public class TGMessageText extends TGMessage {
     } else {
       final float maxWidthMultiply = replyData != null ? 1f : 0.7f;
       final float textWidth = Math.max(visibleText.getMetadata().getTotalWidth(), computeBubbleTimePartWidth(false));
-      forceExpand = replyData == null && (textWidth < (int)(maxWidth * maxWidthMultiply)) && messageReactions.getBubblesCount() > 1 && messageReactions.getHeight() <= TGReactions.getReactionBubbleHeight();
+      forceExpand = replyData == null && (textWidth < (int) (maxWidth * maxWidthMultiply)) && messageReactions.getBubblesCount() > 1 && messageReactions.getHeight() <= TGReactions.getReactionBubbleHeight();
       messageReactions.measureReactionBubbles(Math.max(Math.round(textWidth), (int) (maxWidth * maxWidthMultiply)), computeBubbleTimePartWidth(true, true));
       messageReactions.resetReactionsAnimator(animated);
     }
@@ -685,6 +718,11 @@ public class TGMessageText extends TGMessage {
     if (super.onTouchEvent(view, e)) {
       return true;
     }
+
+    if (translationIcon != null && translationIcon.onTouchEvent(view, e)) {
+      return true;
+    }
+
     TextWrapper wrapper = effectiveWrapper;
     if (wrapper != null && wrapper.onTouchEvent(view, e)) {
       return true;

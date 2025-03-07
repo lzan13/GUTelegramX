@@ -566,7 +566,6 @@ public class TGMessageFile extends TGMessage {
 
   @Override
   protected void drawContent (MessageView view, Canvas c, final int startX, final int startY, int maxWidth, ComplexReceiver receiver) {
-    Log.i("TGMessageFile.drawContent");
     float alpha = getTranslationLoadingAlphaValue();
 
     final int backgroundColor = getContentBackgroundColor();
@@ -580,7 +579,7 @@ public class TGMessageFile extends TGMessage {
       restoreToCount = -1;
     }
     for (ListAnimator.Entry<CaptionedFile> entry : files) {
-      Log.i("TGMessageFile.drawContent %s", entry.item.toString());
+//      Log.i("TGMessageFile.drawContent %s", getMessage().content.toString());
       ImageReceiver imageReceiver = receiver.getImageReceiver(entry.item.receiverId);
       DoubleImageReceiver previewReceiver = receiver.getPreviewReceiver(entry.item.receiverId);
       RectF rectF = entry.getRectF();
@@ -609,6 +608,7 @@ public class TGMessageFile extends TGMessage {
       entry.item.component.draw(view, c, startX, contentStartY, previewReceiver, imageReceiver, backgroundColor, useBubbles() ? ColorUtils.compositeColor(contentReplaceColor, pressColor) : contentReplaceColor, entry.getVisibility(), entry.item.getCheckFactor());
       for (ListAnimator.Entry<TextWrapper> caption : entry.item.caption) {
         int right = useBubbles() ? startX + getContentWidth() : startX + Math.max(entry.item.component.getWidth(), caption.item.getWidth());
+        Log.i("TGMessageFile.drawContent");
         caption.item.draw(c, startX, right, 0, contentStartY + entry.item.component.getHeight() + Screen.dp(TEXT_MARGIN), null, entry.getVisibility() * caption.getVisibility() * alpha, view.getTextMediaReceiver());
       }
     }

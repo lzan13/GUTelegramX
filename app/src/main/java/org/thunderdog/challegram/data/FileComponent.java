@@ -29,7 +29,7 @@ import org.drinkless.tdlib.TdApi;
 import org.thunderdog.challegram.BuildConfig;
 import org.thunderdog.challegram.R;
 import org.thunderdog.challegram.U;
-import org.thunderdog.challegram.component.chat.VoiceToTextView;
+import org.thunderdog.challegram.component.chat.VoiceToTextIcon;
 import org.thunderdog.challegram.component.chat.Waveform;
 import org.thunderdog.challegram.config.Config;
 import org.thunderdog.challegram.core.Lang;
@@ -91,7 +91,7 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
   private @Nullable String subtitle, subtitleMeasure;
   private @Nullable Waveform waveform;
   // 语音转文字按钮
-  private @Nullable VoiceToTextView voiceToTextView;
+  private @Nullable VoiceToTextIcon voiceToTextIcon;
 
   private @Nullable Text trimmedTitle, trimmedSubtitle;
   private float sizeWidth;
@@ -232,6 +232,10 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
     if (viewProvider != null) {
       this.progress.setViewProvider(viewProvider);
     }
+
+    this.voiceToTextIcon = new VoiceToTextIcon(context, playPauseFile);
+    this.voiceToTextIcon.setSimpleListener(this);
+
   }
 
   // VOICE
@@ -252,8 +256,6 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
     this.waveform = new Waveform(voice.waveform, Waveform.MODE_BITMAP, context.isOutgoingBubble());
     this.unreadFactor = playPauseFile != context.getMessage() || context.isContentRead() ? 0f : 1f;
 
-    this.voiceToTextView = new VoiceToTextView();
-
     this.progress = new FileProgressComponent(context.context(), context.tdlib(), TdlibFilesManager.DOWNLOAD_FLAG_VOICE, false, message != null ? message.chatId : context.getChatId(), message != null ? message.id : context.getId());
     this.progress.setBackgroundColorProvider(context);
     this.progress.setSimpleListener(this);
@@ -271,6 +273,10 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
       this.progress.setCurrentState(TdlibFilesManager.STATE_DOWNLOADED_OR_UPLOADED, false);
       this.progress.setDownloadedIconRes(R.drawable.baseline_pause_24);
     }
+
+    this.voiceToTextIcon = new VoiceToTextIcon(context, playPauseFile);
+    this.voiceToTextIcon.setSimpleListener(this);
+
   }
 
   public void onContentOpened () {
@@ -363,7 +369,6 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
     }
     if (waveform != null) {
       waveform.layout(Math.min(Screen.dp(420f), Math.min(TGMessage.getEstimatedContentMaxWidth(), maxWidth) - Screen.dp(FileProgressComponent.DEFAULT_FILE_RADIUS) * 2 - getPreviewOffset() - (int) sizeWidth - Screen.dp(12f)));
-      voiceToTextView.layout();
     }
   }
 
@@ -562,6 +567,9 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
     int startY = lastStartY;
 
     if (progress.onTouchEvent(view, event)) {
+      return true;
+    }
+    if (voiceToTextIcon != null && voiceToTextIcon.onTouchEvent(view, event)) {
       return true;
     }
     if (disallowBoundTouch) {
@@ -793,8 +801,8 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
         }
         trimmedSubtitle.draw(c, textX, textX + trimmedSubtitle.getWidth(), 0, textY, null, alpha);
       }
-      if (isOpenGroupUltraVoiceToText && voiceToTextView != null) {
-        drawVoiceToText(c, startX, startY);
+      if (isOpenGroupUltraVoiceToText && voiceToTextIcon != null) {
+        drawVoiceToTextIcon(c, startX, startY);
       }
     }
   }
@@ -802,11 +810,12 @@ public class FileComponent extends BaseComponent implements FileProgressComponen
   /**
    * 绘制语音转文字控制按钮
    */
-  private void drawVoiceToText (Canvas c, int startX, int startY) {
+  private void drawVoiceToTextIcon (Canvas c, int startX, int startY) {
     int iconX = startX + getPreviewSize() + getPreviewOffset() + waveform.getWidth() + Screen.dp(4f);
     int iconY = startY + Screen.dp(4f);
 
-    voiceToTextView.draw(c, iconX, iconY);
+    voiceToTextIcon.setBounds(iconX, iconY);
+    voiceToTextIcon.draw(c, iconX, iconY);
   }
 
   private boolean setSubtitle (@Nullable String subtitle) {
